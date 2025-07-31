@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Travel Booking</title>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(to right, #e0f7fa, #ffffff);
+            margin: 0;
+            padding: 0;
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: #00796b;
+        }
+
+        form, .filters {
+            max-width: 500px;
+            margin: 20px auto;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 12px;
+        }
+
+        input[type="text"], input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0 12px 0;
+            border: 1px solid #b2dfdb;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #00796b;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #004d40;
+        }
+
+        .agency-card {
+            background-color: #ffffff;
+            margin: 15px 0;
+            padding: 16px 20px;
+            border-left: 6px solid #00796b;
+            border-radius: 10px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease-in-out;
+        }
+
+        .agency-card:hover {
+            transform: scale(1.02);
+        }
+
+        .agency-card h4 {
+            margin: 0 0 10px 0;
+            color: #004d40;
+        }
+
+        .agency-card p {
+            margin: 4px 0;
+            font-size: 15px;
+            color: #444;
+        }
+
+        #agencyResults {
+            max-width: 600px;
+            margin: 20px auto;
+            background-color: #f1f8e9;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+
+        .filters {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Find Travel Agencies</h2>
+
+<form id="searchForm">
+    <label for="source">Source:</label>
+    <input type="text" name="source" id="source" required>
+
+    <label for="destination">Destination:</label>
+    <input type="text" name="destination" id="destination" required>
+
+    <button type="submit">Search</button>
+</form>
+
+<div class="filters" id="filterSection">
+    <h3>Filter Results</h3>
+    <label for="minCost">Min Cost:</label>
+    <input type="number" id="minCost" placeholder="0">
+
+    <label for="maxCost">Max Cost:</label>
+    <input type="number" id="maxCost" placeholder="10000">
+
+    <label for="minDays">Min Days:</label>
+    <input type="number" id="minDays" placeholder="1">
+
+    <label for="maxDays">Max Days:</label>
+    <input type="number" id="maxDays" placeholder="30">
+
+    <label for="agencyFilter">Agency Name:</label>
+    <input type="text" id="agencyFilter" placeholder="Optional">
+
+    <button type="button" id="applyFilters">Apply Filters</button>
+</div>
+
+<div id="agencyResults"></div>
+
+<script>
+    let allAgencies = [];
+
+    $(document).ready(function () {
+        $("#searchForm").submit(function (event) {
+            event.preventDefault();
+
+            const source = $("#source").val().trim();
+            const destination = $("#destination").val().trim();
+
+            if (!source || !destination) return;
+
+            $("#agencyResults").html('<p style="text-align:center;">Searching agencies...</p>');
+            $("#filterSection").hide();
+
+            $.ajax({
+                url: "/getAgencies",
+                type: "GET",
+                data: { source, destination },
+                success: function (agencies) {
+                    allAgencies = agencies || [];
+                    renderFilteredResults();
+                    $("#filterSection").fadeIn(300);
+                },
+                error: function () {
+                    $("#agencyResults").html("<p style='text-align:center;'>Error fetching agencies.</p>");
+                }
+            });
+        });
+
+        $("#applyFilters").click(function () {
+            renderFilteredResults();
+        });
+
+        function renderFilteredResults() {
+            const minCost = parseFloat($("#minCost").val()) || 0;
+            const maxCost = parseFloat($("#maxCost").val()) || Infinity;
+            const minDays = parseInt($("#minDays").val()) || 0;
+            const maxDays = parseInt($("#maxDays").val()) || Infinity;
+            const agencyFilter = $("#agencyFilter").val().toLowerCase();
+
+            let resultHtml = "<h3>Available Agencies</h3>";
+            let found = false;
+
+            allAgencies.forEach(function (agency) {
+                if (agencyFilter && !agency.agencyName.toLowerCase().includes(agencyFilter)) return;
+
+                const filteredServices = agency.services.filter(service =>
+                    service.cost >= minCost &&
+                    service.cost <= maxCost &&
+                    service.days >= minDays &&
+                    service.days <= maxDays
+                );
+
+                if (filteredServices.length === 0) return;
+
+                found = true;
+                resultHtml += `
+                    <div class="agency-card">
+                        <h4>${agency.agencyName}</h4>
+                        ${filteredServices.map(service => `
+                            <p><strong>Route:</strong> ${service.source} → ${service.destination}</p>
+                            <p><strong>Cost:</strong> ₹${service.cost}</p>
+                            <p><strong>Days:</strong> ${service.days}</p>
+                            <p><strong>Description:</strong> ${service.description || 'N/A'}</p>
+                        `).join("")}
+                    </div>
+                `;
+            });
+
+            if (!found) {
+                resultHtml += "<p style='text-align:center;'>No services matched your filters.</p>";
+            }
+
+            $("#agencyResults").hide().html(resultHtml).fadeIn(500);
+        }
+    });
+</script>
+
+</body>
+</html>

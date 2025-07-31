@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Find Your Trip</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #4F46E5;
+      --secondary: #E0E7FF;
+      --background: #F9FAFB;
+      --card-bg: #ffffff;
+      --text: #111827;
+      --accent: #6366F1;
+      --highlight: #FACC15;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: var(--background);
+      margin: 0;
+      padding: 20px;
+      color: var(--text);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 30px;
+      font-weight: 700;
+    }
+
+    .search-form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      background: var(--card-bg);
+      padding: 25px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      margin-bottom: 20px;
+    }
+
+    .search-form input, .search-form select, .search-form button {
+      padding: 12px 16px;
+      font-size: 16px;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      transition: border 0.2s, box-shadow 0.2s;
+    }
+
+    .search-form input:focus, .search-form select:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--secondary);
+    }
+
+    .search-form button {
+      background-color: var(--primary);
+      color: white;
+      font-weight: 500;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .search-form button:hover {
+      background-color: var(--accent);
+    }
+
+    .filters {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .filters select {
+      padding: 10px;
+      font-size: 15px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+.results {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  border-left: 6px solid var(--primary);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+  padding: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:nth-child(even) {
+  background-color: #f3f4f6; /* light gray for even */
+}
+.card:nth-child(odd) {
+  background-color: #ffffff; /* white for odd */
+}
+
+body.dark-mode .card:nth-child(even) {
+  background-color: #2a2a2a;
+}
+body.dark-mode .card:nth-child(odd) {
+  background-color: #1f1f1f;
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.card-header h3 {
+  font-size: 18px;
+  color: var(--primary);
+  margin: 0;
+  font-weight: 600;
+}
+
+.card-body {
+  margin-top: 8px;
+  font-size: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.card-body p {
+  margin: 3px 0;
+  color: #444;
+}
+
+.card-body p strong {
+  color: var(--accent);
+}
+
+.badge {
+  background-color: var(--highlight);
+  color: #000;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+
+.rating {
+  color: var(--highlight);
+  font-weight: bold;
+  font-size: 16px;
+}
+
+	/* 🔁 Spinner Animation */
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid var(--primary);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  margin: 20px auto;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 🌗 Dark Mode Styles */
+body.dark-mode {
+  --background: #1a1a1a;
+  --card-bg: #2a2a2a;
+  --text: #e0e0e0;
+  --accent: #818cf8;
+  --highlight: #fde047;
+  background-image: none;
+}
+
+#darkModeToggle {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+/* 📱 Filters Toggle Button (Mobile) */
+.mobile-toggle {
+  display: none;
+  margin: 10px auto;
+  padding: 10px 20px;
+  background-color: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .filters {
+    display: none;
+  }
+  .filters.show {
+    display: block;
+  }
+  .mobile-toggle {
+    display: block;
+  }
+  .card {
+  animation: fadeIn 0.4s ease-in;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+  
+}
+
+/* 🌄 Background Image (Desktop Only) */
+body {
+  background-image: url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1600&q=80');
+  background-size: cover;
+  background-attachment: fixed;
+  background-repeat: no-repeat;
+}
+body.dark-mode {
+  background: #1a1a1a !important;
+  background-image: none !important;
+}
+
+	
+    @media (max-width: 500px) {
+      .search-form {
+        flex-direction: column;
+      }
+    }
+    @media (max-width: 600px) {
+  .card-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 🪟 Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 999;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background-color: var(--card-bg);
+  margin: 10% auto;
+  padding: 20px;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  color: var(--text);
+  position: relative;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.modal-scrollable {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.close-btn {
+  position: absolute;
+  top: 10px; right: 16px;
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--primary);
+}
+.modal-scrollable img {
+  max-width: 100%;
+  height: auto;
+  margin-top: 10px;
+  border-radius: 8px;
+}
+
+.modal-scrollable p {
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.modal-scrollable h3, .modal-scrollable h4 {
+  margin-top: 16px;
+  color: var(--accent);
+}
+.book-now-btn {
+  background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+  color: white;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  align-self: flex-end;
+  margin-top: auto;
+  margin-right: 10px;
+  margin-bottom: 6px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  max-width: fit-content;
+}
+
+.book-now-btn:hover {
+  background: linear-gradient(135deg, #2c5364, #203a43, #0f2027);
+  transform: scale(1.05);
+}
+
+
+    
+  </style>
+</head>
+<body>
+
+  <h1>Explore Travel Services</h1>
+  <button id="darkModeToggle">🌓</button>
+  <button id="toggleFilters" class="mobile-toggle">Filters</button>
+
+  <form class="search-form" onsubmit="searchServices(event)">
+    <input type="text" id="source" placeholder="Source" required />
+    <input type="text" id="destination" placeholder="Destination" required />
+    <input type="date" id="journeyDate" required />
+    <button type="submit">Search</button>
+  </form>
+
+  <div class="filters">
+    <label>Sort by:</label>
+    <select id="sort" onchange="searchServices()">
+      <option value="">Default</option>
+      <option value="rating">Best Rating</option>
+      <option value="cost">Lowest Cost</option>
+      <option value="days">Shortest Duration</option>
+      <option value="discount">Highest Discount</option>
+    </select>
+  </div>
+
+  <div id="spinner" style="display:none; text-align:center;">
+  	<div class="loader"></div>
+</div>
+<div class="results" id="results"></div>
+
+<!-- Modal -->
+<div id="descriptionModal" class="modal">
+  <div class="modal-content">
+    <span class="close-btn" onclick="closeModal()">&times;</span>
+    <h2>Service Description</h2>
+    <div id="modalDescription" class="modal-scrollable"></div>
+  </div>
+</div>
+
+
+  <script>
+  async function searchServices(e) {
+	  if (e) e.preventDefault();
+
+	  document.getElementById("spinner").style.display = "block";
+
+	  const source = document.getElementById("source").value;
+	  const destination = document.getElementById("destination").value;
+	  const journeyDate = document.getElementById("journeyDate").value;
+	  const sort = document.getElementById("sort").value;
+
+	  const url = `/search?source=${encodeURIComponent(source)}&destination=${encodeURIComponent(destination)}&journeyDate=${encodeURIComponent(journeyDate)}&filter=${sort || 'default'}`;
+	  const res = await fetch(url, { method: 'GET' });
+	  const data = await res.json();
+
+	  const resultsDiv = document.getElementById("results");
+	  resultsDiv.innerHTML = "";
+	  document.getElementById("spinner").style.display = "none";
+
+	  if (data.length === 0) {
+	    resultsDiv.innerHTML = "<p>No services found.</p>";
+	    return;
+	  }
+
+	  data.forEach(agency => {
+		  agency.services.forEach(service => {
+		    const card = document.createElement("div"); // ✅ This line was missing
+		    card.className = "card";
+		    card.innerHTML = `
+		    	  <div class="card-header">
+		    	    <h3>${agency.agencyName}</h3>
+		    	    <span class="badge">★ ${service.rating}</span>
+		    	  </div>
+		    	  <div class="card-body" style="display: flex; flex-direction: column;">
+		    	    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+		    	      <div>
+		    	        <p><strong>Route:</strong> ${service.source} → ${service.destination}</p>
+		    	        <p><strong>Days:</strong> ${service.days}</p>
+		    	        <p><strong>Cost:</strong> ₹${service.cost}</p>
+		    	      </div>
+		    	      <div>
+		    	        <p><strong>Discount:</strong> ${service.discount}%</p>
+		    	        <p><strong>Date:</strong> ${service.serviceProvidedDate}</p>
+		    	        <p>
+		    	          <em class="desc-preview" 
+		    	               title="${service.description ? 'Click to view full description' : ''}"
+		    	               onclick="openModal(\`${escapeHtml(service.description || 'No description provided')}\`)">
+		    	            ${truncateDescription(service.description || 'No description provided', 4)}
+		    	          </em>
+		    	        </p>
+		    	      </div>
+		    	    </div>
+		    	    <button class="book-now-btn" onclick='bookService(${service.id})'>
+		    	      Book Now
+		    	    </button>
+		    	  </div>
+		    	`;
+
+		    resultsDiv.appendChild(card);
+		  });
+		});
+
+	}
+  document.getElementById("darkModeToggle").addEventListener("click", () => {
+	  document.body.classList.toggle("dark-mode");
+	});
+  document.getElementById("toggleFilters").addEventListener("click", () => {
+	  const filters = document.querySelector(".filters");
+	  filters.classList.toggle("show");
+	});
+  function truncateDescription(desc, wordLimit) {
+	  const words = desc.split(" ");
+	  return words.length > wordLimit
+	    ? words.slice(0, wordLimit).join(" ") + "..."
+	    : desc;
+	}
+
+	function openModal(fullDescription) {
+	  document.getElementById("modalDescription").innerText = fullDescription;
+	  document.getElementById("descriptionModal").style.display = "block";
+	}
+
+	function closeModal() {
+	  document.getElementById("descriptionModal").style.display = "none";
+	}
+	function escapeHtml(unsafe) {
+		  return unsafe
+		    .replace(/&/g, "&amp;")
+		    .replace(/</g, "&lt;")
+		    .replace(/>/g, "&gt;")
+		    .replace(/"/g, "&quot;")
+		    .replace(/'/g, "&#039;");
+		}
+	
+	function bookService(serviceId) {
+		  window.location.href = `/book?serviceId=${encodeURIComponent(serviceId)}`;
+		}
+
+  </script>
+</body>
+</html>

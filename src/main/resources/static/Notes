@@ -1,0 +1,54 @@
+//Trigger for Auto-Inserting into servicecapacity on New Service
+
+DELIMITER $$
+
+CREATE TRIGGER trg_after_insert_services
+AFTER INSERT ON services
+FOR EACH ROW
+BEGIN
+    IF NEW.service_provided_date IS NOT NULL AND NEW.capacity IS NOT NULL THEN
+        INSERT INTO servicecapacity (service_id, journey_date, total_capacity)
+        VALUES (NEW.id, NEW.service_provided_date, NEW.capacity);
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+//2️⃣ Trigger for Auto-Updating servicecapacity on Service Update
+DELIMITER $$
+
+CREATE TRIGGER trg_after_update_services
+AFTER UPDATE ON services
+FOR EACH ROW
+BEGIN
+    IF (
+        (OLD.service_provided_date != NEW.service_provided_date OR
+         OLD.capacity != NEW.capacity)
+        AND NEW.service_provided_date IS NOT NULL
+    ) THEN
+        -- Check if an entry already exists
+        IF EXISTS (
+            SELECT 1 FROM servicecapacity
+            WHERE service_id = NEW.id
+              AND journey_date = OLD.service_provided_date
+        ) THEN
+            -- Update the existing record
+            UPDATE servicecapacity
+            SET journey_date = NEW.service_provided_date,
+                total_capacity = NEW.capacity
+            WHERE service_id = NEW.id
+              AND journey_date = OLD.service_provided_date;
+        ELSE
+            -- Insert a new record if no existing one
+            INSERT INTO servicecapacity (service_id, journey_date, total_capacity)
+            VALUES (NEW.id, NEW.service_provided_date, NEW.capacity);
+        END IF;
+    END IF;
+END$$
+
+DELIMITER ;
+
+
+INSERT INTO services ( capacity, service_provided_date)
+VALUES (30, '2025-08-01');
