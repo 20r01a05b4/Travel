@@ -33,7 +33,9 @@ public class TravelRepository {
     // === Agency Methods ===
 
     public void saveAgency(Agency agency) {
-        entityManager.persist(agency);
+    	System.out.println("Only this saveAGency triggers");
+    	
+    	entityManager.persist(agency);
     }
 
     public Agency getAgencyById(int id) {
@@ -54,6 +56,7 @@ public class TravelRepository {
     // === AgencyService Methods ===
  
     public void saveService(AgencyService service) {
+    	System.out.println("saveService also triggers");
         entityManager.persist(service);
     }
 
@@ -62,7 +65,9 @@ public class TravelRepository {
     }
 
     public void updateService(AgencyService service) {
+    	System.out.println("This one will trigger");
         entityManager.merge(service);
+        
     }
 
     public void deleteServiceById(Long id) {
@@ -158,6 +163,31 @@ public class TravelRepository {
 	        // If no entry exists yet, assume all seats are available
 	        return 0;
 	    }
+	}
+
+	public void saveServiceCapacity(ServiceCapacity servicecapacity) {
+		// TODO Auto-generated method stub
+		entityManager.persist(servicecapacity);
+		
+	}
+
+	public ServiceCapacity findServiceCapacityByServiceAndDate(Long serviceId, LocalDate journeyDate) {
+	    try {
+	        return entityManager.createQuery(
+	            "SELECT sc FROM ServiceCapacity sc WHERE sc.service.id = :serviceId AND sc.journeyDate = :journeyDate",
+	            ServiceCapacity.class
+	        )
+	        .setParameter("serviceId", serviceId)
+	        .setParameter("journeyDate", journeyDate)
+	        .getSingleResult();
+	    } catch (NoResultException e) {
+	        return null;
+	    }
+	}
+   
+	
+	public void updateServiceCapacity(ServiceCapacity serviceCapacity) {
+	    entityManager.merge(serviceCapacity);
 	}
 
 

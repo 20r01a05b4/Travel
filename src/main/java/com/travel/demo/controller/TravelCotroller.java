@@ -257,4 +257,9 @@ public ResponseEntity<String> deleteService(@PathVariable Long id) {
 	 return	Travelservice.peopleFit(serviceId,journeyDate,count);
 	
 	}
+	
+	@GetMapping("/navbar")
+	public String navbar() {
+		return "navbar";
+	}
 }

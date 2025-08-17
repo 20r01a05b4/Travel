@@ -1,6 +1,7 @@
 package com.travel.demo.service;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -26,10 +27,19 @@ public class TravelService {
 
     public void saveAgencyWithServices(Agency agency, List<AgencyService> services) {
         for (AgencyService service : services) {
-            service.setAgency(agency);
+        	  service.setAgency(agency);
         }
         agency.setServices(services);
         agencyRepository.saveAgency(agency);
+      for(AgencyService service:services) {
+    	  ServiceCapacity servicecapacity=new ServiceCapacity();
+	      	servicecapacity.setJourneyDate(service.getServiceProvidedDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+	      	servicecapacity.setService(service);
+	      	servicecapacity.setTotalCapacity(service.getCapacity());
+	      	servicecapacity.setSeatsConfirmed(0);
+	      	agencyRepository.saveServiceCapacity(servicecapacity);
+      }
+        
         
     }
 
@@ -72,6 +82,19 @@ public class TravelService {
 
     public void updateService(AgencyService updatedService) {
     	agencyRepository.updateService(updatedService);
+
+        // Find the existing ServiceCapacity record based on service ID and journeyDate
+        ServiceCapacity sc = agencyRepository.findServiceCapacityByServiceAndDate(
+            updatedService.getId(),
+            updatedService.getServiceProvidedDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate()
+        );
+
+        if (sc != null) {
+            // Update total capacity if service capacity is changed
+            sc.setTotalCapacity(updatedService.getCapacity());
+            agencyRepository.updateServiceCapacity(sc);
+        }
+    	
     }
 
     public void deleteServiceById(Long id) {

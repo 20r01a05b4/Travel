@@ -1,0 +1,47 @@
+@charset "UTF-8";
+/* Navbar gradient */
+.navbar {
+    background: linear-gradient(90deg, #198754, #145c32);
+}
+
+/* Brand */
+.navbar-brand {
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+    transition: transform 0.2s ease;
+    color: #fff !important;
+}
+.navbar-brand:hover {
+    transform: scale(1.05);
+}
+
+/* Links */
+.navbar-nav .nav-link {
+    color: #e8f5e9 !important;
+    font-weight: 500;
+    transition: background 0.3s ease, color 0.3s ease;
+    padding: 8px 15px;
+    border-radius: 6px;
+}
+
+/* Hover */
+.navbar-nav .nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    color: #ffffff !important;
+}
+
+/* Active */
+.navbar-nav .nav-link.active {
+    background-color: rgba(255, 255, 255, 0.25);
+    color: #ffffff !important;
+    font-weight: 600;
+}
+
+/* Logout special */
+.navbar-nav:last-child .nav-link {
+    color: #ffdddd !important;
+}
+.navbar-nav:last-child .nav-link:hover {
+    background-color: rgba(255, 77, 77, 0.2);
+    color: #ff4444 !important;
+}
