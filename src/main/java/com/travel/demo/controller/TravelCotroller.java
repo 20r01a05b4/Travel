@@ -44,7 +44,7 @@ public class TravelCotroller {
 	
 @GetMapping("/")
 public String homepage(){
-	return "home";
+	return "newHome";
 }
 
 @GetMapping("/upload")
